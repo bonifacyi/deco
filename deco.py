@@ -31,7 +31,7 @@ def countcalls(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         wrapper.calls += 1
-        print(f'{func.__name__} -> call {wrapper.calls}')
+        # print(f'{func.__name__} -> call {wrapper.calls}')
         return func(*args, **kwargs)
 
     wrapper.calls = 0
@@ -77,7 +77,7 @@ def n_ary(func):
     return wrapper
 
 
-def trace():
+def trace(label):
     """Trace calls made to function decorated.
 
     @trace("____")
@@ -97,9 +97,23 @@ def trace():
      <-- fib(3) == 3
 
     """
+    def trace_deco(func):
 
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            print(''.join(func.tab), '-->', fib.__name__ + '(' + str(args[0]) + ')')
+            func.tab.append(label)
 
-    return
+            result = func(*args, **kwargs)
+
+            func.tab.pop()
+            print(''.join(func.tab), '<--', fib.__name__ + '(' + str(args[0]) + ')', '==', result)
+            return result
+
+        func.tab = []
+        return wrapper
+
+    return trace_deco
 
 
 @memo
@@ -117,6 +131,7 @@ def bar(a, b):
 
 
 @countcalls
+@trace("####")
 @memo
 def fib(n):
     """Some doc"""
@@ -139,27 +154,10 @@ def main():
     print(bar.cache)
 
     print(fib.__doc__)
-    fib(3)
-    print(fib.calls, 'calls made')
+    print(fib(3))
+    print("fib was", fib.calls, 'calls made')
 
 
-'''print(foo(1, 2))
-print(bar(4, 5))
-print(foo(3, 6))
-print(foo(1, 2))
-print(bar(4, 5))
-
-print(foo(13))
-print(bar(15))
-
-print('foo(5, 10, 15)', foo(5, 10, 15))
-print('bar(4, 5, 2)', bar(4, 5, 2))
-
-print('foo(3, 6, 9, 10)', foo(3, 6, 9, 10))
-print('bar(4, 5, 2, 3)', bar(4, 5, 2, 3))
-'''
-
-main()
 if __name__ == '__main__':
     main()
 
